@@ -43,5 +43,5 @@ ENV HOSTNAME="0.0.0.0"
 # Expose port
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application (run migrations first, then start)
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
