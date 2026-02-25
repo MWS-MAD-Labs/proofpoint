@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main, Staging]
   workflow_dispatch:
     inputs:
       environment:
@@ -84,6 +84,7 @@ jobs:
             echo "value=staging" >> $GITHUB_OUTPUT
           fi
 
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -91,7 +92,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ steps.tag.outputs.value }}
-            type=sha,prefix=${{ github.ref_name }}-
+            type=sha,prefix=${{ github.ref_name == 'main' && 'main' || 'staging' }}-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -150,7 +151,7 @@ jobs:
     name: Deploy → Staging
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref_name == 'staging'
+    if: github.ref_name == 'Staging'
     environment: staging
     steps:
       - name: Call Komodo Webhook (Staging)
