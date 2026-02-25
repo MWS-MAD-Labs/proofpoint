@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { auth } from "@/lib/auth";
 import { query, queryOne } from "@/lib/db";
 import bcrypt from "bcrypt";
@@ -96,10 +97,10 @@ export async function POST(request: Request) {
 
         // Create user
         const newUser = await queryOne<{ id: string }>(
-            `INSERT INTO users (email, password_hash, status) 
-             VALUES ($1, $2, 'active') 
+            `INSERT INTO users (id, email, password_hash, status) 
+             VALUES ($1, $2, $3, 'active') 
              RETURNING id`,
-            [email, passwordHash]
+            [randomUUID(), email, passwordHash]
         );
 
         if (!newUser) {
@@ -108,9 +109,9 @@ export async function POST(request: Request) {
 
         // Create profile
         await queryOne(
-            `INSERT INTO profiles (user_id, email, full_name, niy, job_title, department_id)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
-            [newUser.id, email, full_name ?? null, niy ?? null, job_title ?? null, department_id ?? null]
+            `INSERT INTO profiles (id, user_id, email, full_name, niy, job_title, department_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [randomUUID(), newUser.id, email, full_name ?? null, niy ?? null, job_title ?? null, department_id ?? null]
         );
 
         // Assign roles (default to 'staff' if not specified)
@@ -131,8 +132,8 @@ export async function POST(request: Request) {
 
         for (const role of rolesArray) {
             await queryOne(
-                `INSERT INTO user_roles (user_id, role) VALUES ($1, $2::public.app_role)`,
-                [newUser.id, role]
+                `INSERT INTO user_roles (id, user_id, role) VALUES ($1, $2, $3::public.app_role)`,
+                [randomUUID(), newUser.id, role]
             );
         }
 
@@ -225,8 +226,8 @@ export async function PUT(request: Request) {
                 // Add new roles
                 for (const role of rolesArray) {
                     await queryOne(
-                        `INSERT INTO user_roles (user_id, role) VALUES ($1, $2::public.app_role)`,
-                        [id, role]
+                        `INSERT INTO user_roles (id, user_id, role) VALUES ($1, $2, $3::public.app_role)`,
+                        [randomUUID(), id, role]
                     );
                 }
             }

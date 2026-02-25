@@ -96,10 +96,11 @@ async function upsertGoogleUserByEmail(email: string, fullName: string | null) {
     let userId = existingUser.rows[0]?.id;
 
     if (!userId) {
+      const newUserId = randomUUID();
       const placeholderPasswordHash = await bcrypt.hash(randomUUID(), 12);
       const createdUser = await client.query<{ id: string }>(
-        "INSERT INTO users (email, password_hash, email_verified) VALUES ($1, $2, true) RETURNING id",
-        [normalizedEmail, placeholderPasswordHash],
+        "INSERT INTO users (id, email, password_hash, email_verified) VALUES ($1, $2, $3, true) RETURNING id",
+        [newUserId, normalizedEmail, placeholderPasswordHash],
       );
       userId = createdUser.rows[0]?.id;
     } else {
@@ -115,20 +116,20 @@ async function upsertGoogleUserByEmail(email: string, fullName: string | null) {
     }
 
     await client.query(
-      `INSERT INTO profiles (user_id, email, full_name)
-             VALUES ($1, $2, $3)
+      `INSERT INTO profiles (id, user_id, email, full_name)
+             VALUES ($1, $2, $3, $4)
              ON CONFLICT (user_id) DO UPDATE
              SET email = EXCLUDED.email,
                  full_name = COALESCE(profiles.full_name, EXCLUDED.full_name),
                  updated_at = now()`,
-      [userId, normalizedEmail, fullName],
+      [randomUUID(), userId, normalizedEmail, fullName],
     );
 
     await client.query(
-      `INSERT INTO user_roles (user_id, role)
-             VALUES ($1, 'staff')
+      `INSERT INTO user_roles (id, user_id, role)
+             VALUES ($1, $2, 'staff')
              ON CONFLICT (user_id, role) DO NOTHING`,
-      [userId],
+      [randomUUID(), userId],
     );
 
     console.log("Upserting Google user:", { email: normalizedEmail, fullName });

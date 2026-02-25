@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { query, queryOne } from "@/lib/db";
 
@@ -38,19 +39,21 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(password, 12);
 
     // Create user
+    const newId = randomUUID();
     const [newUser] = await query<{ id: string }>(
-      "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id",
-      [normalizedEmail, passwordHash],
+      "INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3) RETURNING id",
+      [newId, normalizedEmail, passwordHash],
     );
 
     // Create profile
     await query(
-      "INSERT INTO profiles (user_id, email, full_name) VALUES ($1, $2, $3)",
-      [newUser.id, normalizedEmail, fullName ?? null],
+      "INSERT INTO profiles (id, user_id, email, full_name) VALUES ($1, $2, $3, $4)",
+      [randomUUID(), newUser.id, normalizedEmail, fullName ?? null],
     );
 
     // Assign default staff role
-    await query("INSERT INTO user_roles (user_id, role) VALUES ($1, 'staff')", [
+    await query("INSERT INTO user_roles (id, user_id, role) VALUES ($1, $2, 'staff')", [
+      randomUUID(),
       newUser.id,
     ]);
 
