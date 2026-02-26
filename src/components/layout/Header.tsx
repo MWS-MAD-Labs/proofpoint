@@ -19,6 +19,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,21 +113,8 @@ export function Header({ className }: HeaderProps) {
     >
       <div className="container h-full flex items-center justify-between">
         {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary rounded-xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity" />
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-primary glow-primary group-hover:scale-105 transition-transform">
-              <Activity className="h-5 w-5 text-primary-foreground" />
-            </div>
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
-              ProofPoint
-            </h1>
-            <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-              Command Center
-            </p>
-          </div>
+        <Link href="/dashboard" className="shrink-0">
+          <Logo />
         </Link>
 
         {/* Nav */}
