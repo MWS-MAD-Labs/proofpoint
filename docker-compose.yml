@@ -3,7 +3,7 @@ services:
   # Next.js Application (Frontend + API)
   # ============================================
   app:
-    image: ghcr.io/faisalnh/proofpoint-dashboard:latest
+    image: ghcr.io/mws-mad-labs/proofpoint:latest
     # To build locally instead, comment out 'image' and uncomment:
     # build:
     #   context: .
